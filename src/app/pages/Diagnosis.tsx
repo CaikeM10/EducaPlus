@@ -1,11 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { Progress } from "../components/ui/progress";
-import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
-import { Label } from "../components/ui/label";
+
 import { GraduationCap } from "lucide-react";
+
+import { api } from "../services/api";
+
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Progress } from "../components/ui/progress";
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "../components/ui/radio-group";
+import { Label } from "../components/ui/label";
 
 const questions = [
   {
@@ -50,25 +63,49 @@ const questions = [
   },
   {
     id: 5,
-    question: "Qual é sua principal área de interesse para desenvolvimento profissional?",
+    question:
+      "Qual é sua principal área de interesse para desenvolvimento profissional?",
     options: [
-      { value: "inclusive", label: "Estratégias de educação inclusiva" },
-      { value: "classroom", label: "Gestão de sala de aula" },
-      { value: "curriculum", label: "Adaptação curricular" },
-      { value: "assessment", label: "Métodos alternativos de avaliação" },
+      {
+        value: "inclusive",
+        label: "Estratégias de educação inclusiva",
+      },
+      {
+        value: "classroom",
+        label: "Gestão de sala de aula",
+      },
+      {
+        value: "curriculum",
+        label: "Adaptação curricular",
+      },
+      {
+        value: "assessment",
+        label: "Métodos alternativos de avaliação",
+      },
     ],
   },
 ];
 
 export default function Diagnosis() {
   const navigate = useNavigate();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const [currentQuestion, setCurrentQuestion] =
+    useState(0);
+
+  const [answers, setAnswers] = useState<
+    Record<number, string>
+  >({});
+
+  const [loading, setLoading] = useState(false);
+
+  const progress =
+    ((currentQuestion + 1) / questions.length) * 100;
 
   const handleAnswer = (value: string) => {
-    setAnswers({ ...answers, [questions[currentQuestion].id]: value });
+    setAnswers({
+      ...answers,
+      [questions[currentQuestion].id]: value,
+    });
   };
 
   const handleNext = () => {
@@ -83,15 +120,34 @@ export default function Diagnosis() {
     }
   };
 
-  const handleFinish = () => {
-    // Save diagnosis results
-    localStorage.setItem("diagnosisCompleted", "true");
-    localStorage.setItem("diagnosisAnswers", JSON.stringify(answers));
-    navigate("/app");
+  const handleFinish = async () => {
+    try {
+      setLoading(true);
+
+      await api.post("/diagnosis", {
+        answers,
+      });
+
+      localStorage.setItem(
+        "diagnosisCompleted",
+        "true",
+      );
+
+      navigate("/app");
+    } catch (error) {
+      console.error(error);
+
+      alert("Erro ao salvar diagnóstico.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const currentAnswer = answers[questions[currentQuestion].id];
-  const isLastQuestion = currentQuestion === questions.length - 1;
+  const currentAnswer =
+    answers[questions[currentQuestion].id];
+
+  const isLastQuestion =
+    currentQuestion === questions.length - 1;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -102,31 +158,65 @@ export default function Diagnosis() {
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Diagnóstico Inicial</CardTitle>
+
+          <CardTitle className="text-2xl">
+            Diagnóstico Inicial
+          </CardTitle>
+
           <CardDescription>
-            Ajude-nos a personalizar sua experiência respondendo algumas perguntas
+            Ajude-nos a personalizar sua experiência
+            respondendo algumas perguntas
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Pergunta {currentQuestion + 1} de {questions.length}</span>
-              <span>{Math.round(progress)}%</span>
+              <span>
+                Pergunta {currentQuestion + 1} de{" "}
+                {questions.length}
+              </span>
+
+              <span>
+                {Math.round(progress)}%
+              </span>
             </div>
-            <Progress value={progress} className="h-2" />
+
+            <Progress
+              value={progress}
+              className="h-2"
+            />
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg">{questions[currentQuestion].question}</h3>
-            <RadioGroup value={currentAnswer} onValueChange={handleAnswer}>
+            <h3 className="text-lg">
+              {
+                questions[currentQuestion]
+                  .question
+              }
+            </h3>
+
+            <RadioGroup
+              value={currentAnswer}
+              onValueChange={handleAnswer}
+            >
               <div className="space-y-3">
-                {questions[currentQuestion].options.map((option) => (
+                {questions[
+                  currentQuestion
+                ].options.map((option) => (
                   <div
                     key={option.value}
                     className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors"
                   >
-                    <RadioGroupItem value={option.value} id={option.value} />
-                    <Label htmlFor={option.value} className="flex-1 cursor-pointer">
+                    <RadioGroupItem
+                      value={option.value}
+                      id={option.value}
+                    />
+
+                    <Label
+                      htmlFor={option.value}
+                      className="flex-1 cursor-pointer"
+                    >
                       {option.label}
                     </Label>
                   </div>
@@ -139,22 +229,31 @@ export default function Diagnosis() {
             <Button
               variant="outline"
               onClick={handlePrevious}
-              disabled={currentQuestion === 0}
+              disabled={
+                currentQuestion === 0 || loading
+              }
             >
               Anterior
             </Button>
+
             {isLastQuestion ? (
               <Button
                 onClick={handleFinish}
-                disabled={!currentAnswer}
+                disabled={
+                  !currentAnswer || loading
+                }
                 className="bg-secondary hover:bg-secondary/90"
               >
-                Finalizar
+                {loading
+                  ? "Salvando..."
+                  : "Finalizar"}
               </Button>
             ) : (
               <Button
                 onClick={handleNext}
-                disabled={!currentAnswer}
+                disabled={
+                  !currentAnswer || loading
+                }
                 className="bg-primary hover:bg-primary/90"
               >
                 Próxima
