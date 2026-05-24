@@ -1,16 +1,23 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Diagnosis from "./pages/Diagnosis";
-import DashboardLayout from "./pages/DashboardLayout";
-import Dashboard from "./pages/Dashboard";
-import LearningPaths from "./pages/LearningPaths";
-import LearningPathDetail from "./pages/LearningPathDetail";
-import Planner from "./pages/Planner";
-import Library from "./pages/Library";
-import Diary from "./pages/Diary";
-import Profile from "./pages/Profile";
 import { PrivateRoute } from "./routes/PrivateRoute";
+import { LoadingState } from "../shared/components/LoadingState";
+
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Diagnosis = lazy(() => import("./pages/Diagnosis"));
+const DashboardLayout = lazy(() => import("./pages/DashboardLayout"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const LearningPaths = lazy(() => import("./pages/LearningPaths"));
+const LearningPathDetail = lazy(() => import("./pages/LearningPathDetail"));
+const Planner = lazy(() => import("./pages/Planner"));
+const Library = lazy(() => import("./pages/Library"));
+const Diary = lazy(() => import("./pages/Diary"));
+const Profile = lazy(() => import("./pages/Profile"));
+
+function withSuspense(element: React.ReactNode) {
+  return <Suspense fallback={<LoadingState />}>{element}</Suspense>;
+}
 
 export const router = createBrowserRouter([
   {
@@ -19,51 +26,51 @@ export const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <Login />,
+    element: withSuspense(<Login />),
   },
   {
     path: "/register",
-    element: <Register />,
+    element: withSuspense(<Register />),
   },
   {
     path: "/diagnosis",
-    element: <Diagnosis />,
+    element: withSuspense(<Diagnosis />),
   },
   {
     path: "/app",
-    element: (
-    <PrivateRoute>
-      <DashboardLayout />
-    </PrivateRoute>
-  ),
+    element: withSuspense(
+      <PrivateRoute>
+        <DashboardLayout />
+      </PrivateRoute>,
+    ),
     children: [
       {
         index: true,
-        element: <Dashboard />,
+        element: withSuspense(<Dashboard />),
       },
       {
         path: "learning-paths",
-        element: <LearningPaths />,
+        element: withSuspense(<LearningPaths />),
       },
       {
         path: "learning-paths/:id",
-        element: <LearningPathDetail />,
+        element: withSuspense(<LearningPathDetail />),
       },
       {
         path: "planner",
-        element: <Planner />,
+        element: withSuspense(<Planner />),
       },
       {
         path: "library",
-        element: <Library />,
+        element: withSuspense(<Library />),
       },
       {
         path: "diary",
-        element: <Diary />,
+        element: withSuspense(<Diary />),
       },
       {
         path: "profile",
-        element: <Profile />,
+        element: withSuspense(<Profile />),
       },
     ],
   },

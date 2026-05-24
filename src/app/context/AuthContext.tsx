@@ -1,56 +1,64 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { api } from "../services/api";
 
+export type UserRole = "ADMIN" | "TEACHER" | "COORDINATOR" | "SPECIAL_ED";
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+};
+
 type AuthContextType = {
-  user: any;
+  user: AuthUser | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (userData: any) => void;
+  setAuthenticatedUser: (userData: AuthUser, token?: string) => void;
+  refreshUser: () => Promise<AuthUser | null>;
   logout: () => void;
 };
 
 const AuthContext = createContext({} as AuthContextType);
 
-export function AuthProvider({ children }: any) {
-  const [user, setUser] = useState<any>(null);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadUser() {
-      const token = localStorage.getItem("token");
+  async function refreshUser() {
+    const token = localStorage.getItem("token");
 
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await api.get("/users/me");
-
-        setUser(response.data);
-      } catch (error) {
-        console.error("Token inválido");
-
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+    if (!token) {
+      setUser(null);
+      return null;
     }
 
-    loadUser();
+    try {
+      const response = await api.get<AuthUser>("/users/me");
+      setUser(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Sessão inválida", error);
+      localStorage.removeItem("token");
+      setUser(null);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    refreshUser().finally(() => setLoading(false));
   }, []);
 
-  function login(userData: any) {
+  function setAuthenticatedUser(userData: AuthUser, token?: string) {
+    if (token) {
+      localStorage.setItem("token", token);
+    }
+
     setUser(userData);
   }
 
   function logout() {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
     setUser(null);
   }
 
@@ -60,7 +68,8 @@ export function AuthProvider({ children }: any) {
         user,
         loading,
         isAuthenticated: !!user,
-        login,
+        setAuthenticatedUser,
+        refreshUser,
         logout,
       }}
     >

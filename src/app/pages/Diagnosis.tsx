@@ -128,11 +128,6 @@ export default function Diagnosis() {
         answers,
       });
 
-      localStorage.setItem(
-        "diagnosisCompleted",
-        "true",
-      );
-
       navigate("/app");
     } catch (error) {
       console.error(error);
@@ -150,27 +145,29 @@ export default function Diagnosis() {
     currentQuestion === questions.length - 1;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-primary rounded-full p-3">
+    <div className="min-h-screen flex items-center justify-center bg-muted/20 p-4">
+      <Card className="w-full max-w-2xl border-0 shadow-xl">
+        <CardHeader className="text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="bg-primary rounded-2xl p-4 shadow-md">
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
           </div>
 
-          <CardTitle className="text-2xl">
-            Diagnóstico Inicial
-          </CardTitle>
+          <div className="space-y-2">
+            <CardTitle className="text-3xl font-bold">
+              Diagnóstico Inicial
+            </CardTitle>
 
-          <CardDescription>
-            Ajude-nos a personalizar sua experiência
-            respondendo algumas perguntas
-          </CardDescription>
+            <CardDescription className="text-base">
+              Ajude-nos a personalizar sua experiência
+              respondendo algumas perguntas
+            </CardDescription>
+          </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
+        <CardContent className="space-y-8">
+          <div className="space-y-3">
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>
                 Pergunta {currentQuestion + 1} de{" "}
@@ -188,8 +185,8 @@ export default function Diagnosis() {
             />
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg">
+          <div className="space-y-5">
+            <h3 className="text-xl font-semibold leading-relaxed">
               {
                 questions[currentQuestion]
                   .question
@@ -199,29 +196,47 @@ export default function Diagnosis() {
             <RadioGroup
               value={currentAnswer}
               onValueChange={handleAnswer}
+              className="space-y-3"
             >
-              <div className="space-y-3">
-                {questions[
-                  currentQuestion
-                ].options.map((option) => (
-                  <div
+              {questions[
+                currentQuestion
+              ].options.map((option) => {
+                const isSelected =
+                  currentAnswer === option.value;
+
+                return (
+                  <Label
                     key={option.value}
-                    className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                    htmlFor={option.value}
+                    className={`
+                      flex items-center gap-4 rounded-xl border p-4
+                      cursor-pointer transition-all duration-200
+                      hover:border-primary/50 hover:bg-muted/40
+                      ${
+                        isSelected
+                          ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20"
+                          : "border-border"
+                      }
+                    `}
                   >
                     <RadioGroupItem
                       value={option.value}
                       id={option.value}
+                      className="mt-0.5"
                     />
 
-                    <Label
-                      htmlFor={option.value}
-                      className="flex-1 cursor-pointer"
-                    >
-                      {option.label}
-                    </Label>
-                  </div>
-                ))}
-              </div>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm">
+                        {option.label}
+                      </span>
+
+                      <span className="text-xs text-muted-foreground">
+                        Clique para selecionar
+                      </span>
+                    </div>
+                  </Label>
+                );
+              })}
             </RadioGroup>
           </div>
 
@@ -232,6 +247,7 @@ export default function Diagnosis() {
               disabled={
                 currentQuestion === 0 || loading
               }
+              className="min-w-[120px]"
             >
               Anterior
             </Button>
@@ -242,7 +258,7 @@ export default function Diagnosis() {
                 disabled={
                   !currentAnswer || loading
                 }
-                className="bg-secondary hover:bg-secondary/90"
+                className="min-w-[120px] bg-secondary hover:bg-secondary/90"
               >
                 {loading
                   ? "Salvando..."
@@ -254,7 +270,7 @@ export default function Diagnosis() {
                 disabled={
                   !currentAnswer || loading
                 }
-                className="bg-primary hover:bg-primary/90"
+                className="min-w-[120px] bg-primary hover:bg-primary/90"
               >
                 Próxima
               </Button>

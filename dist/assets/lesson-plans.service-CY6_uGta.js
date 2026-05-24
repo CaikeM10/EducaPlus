@@ -1,0 +1,6 @@
+import{a as n,c as t}from"./button-BME9v__j.js";import{j as r,b as s}from"./index-Cy4cndB2.js";/**
+ * @license lucide-react v0.487.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const i=[["path",{d:"M3 6h18",key:"d0wm0j"}],["path",{d:"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6",key:"4alrt4"}],["path",{d:"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2",key:"v07s0e"}],["line",{x1:"10",x2:"10",y1:"11",y2:"17",key:"1uufr5"}],["line",{x1:"14",x2:"14",y1:"11",y2:"17",key:"xtxkd"}]],c=n("trash-2",i);function l({className:e,...a}){return r.jsx("textarea",{"data-slot":"textarea",className:t("resize-none border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-input-background px-3 py-2 text-base transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",e),...a})}async function u(e){return(await s.get("/lesson-plans",{params:e})).data}async function p(e){return(await s.post("/lesson-plans",e)).data}async function x(e){await s.delete(`/lesson-plans/${e}`)}export{c as T,l as a,p as c,x as d,u as l};

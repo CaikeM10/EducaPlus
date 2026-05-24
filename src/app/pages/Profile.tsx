@@ -1,253 +1,642 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { useEffect, useMemo, useState } from "react";
+
+import {
+  BookOpen,
+  Calendar,
+  Edit2,
+  Save,
+  Sparkles,
+  Target,
+  Trophy,
+  User,
+} from "lucide-react";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+
 import { Button } from "../components/ui/button";
+
 import { Input } from "../components/ui/input";
+
 import { Label } from "../components/ui/label";
+
 import { Progress } from "../components/ui/progress";
+
 import { Badge } from "../components/ui/badge";
-import { User, Mail, Briefcase, Award, BookOpen, Calendar, Edit2, Save } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+
+import { api } from "../services/api";
+
+import { useAuth } from "../context/AuthContext";
+
+import { useNavigate } from "react-router";
+
+type LearningPath = {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: "Administrador(a)",
+  TEACHER: "Professor(a)",
+  COORDINATOR: "Coordenador(a)",
+  SPECIAL_ED:
+    "Profissional de Educação Especial",
+};
 
 export default function Profile() {
-  const [user, setUser] = useState<any>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  const {
+    user,
+    refreshUser,
+    logout,
+  } = useAuth();
+
+  const navigate = useNavigate();
+
+  const [isEditing, setIsEditing] =
+    useState(false);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const [deleting, setDeleting] =
+    useState(false);
+
+  const [name, setName] =
+    useState("");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [learningPaths, setLearningPaths] =
+    useState<LearningPath[]>([]);
+
+  const [
+    lessonPlansCount,
+    setLessonPlansCount,
+  ] = useState(0);
+
+  const [
+    diaryEntriesCount,
+    setDiaryEntriesCount,
+  ] = useState(0);
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      setName(parsedUser.name);
-      setEmail(parsedUser.email);
-      setRole(parsedUser.role);
+    if (!user) return;
+
+    setName(user.name);
+    setEmail(user.email);
+
+    loadProfileData();
+  }, [user]);
+
+  const loadProfileData = async () => {
+    try {
+      setLoading(true);
+
+      const [
+        learningPathsResponse,
+        lessonPlansResponse,
+        diaryResponse,
+      ] = await Promise.all([
+        api.get(
+          "/learning-paths/with-progress?page=1&limit=100"
+        ),
+
+        api.get(
+          "/lesson-plans?page=1&limit=100"
+        ),
+
+        api.get(
+          "/diary?page=1&limit=100"
+        ),
+      ]);
+
+      const learningPathsData =
+        learningPathsResponse.data
+          ?.items ||
+        learningPathsResponse.data
+          ?.data?.items ||
+        [];
+
+      const lessonPlansData =
+        lessonPlansResponse.data
+          ?.items ||
+        lessonPlansResponse.data
+          ?.data?.items ||
+        [];
+
+      const diaryData =
+        diaryResponse.data
+          ?.items ||
+        diaryResponse.data
+          ?.data?.items ||
+        [];
+
+      setLearningPaths(
+        learningPathsData
+      );
+
+      setLessonPlansCount(
+        lessonPlansData.length
+      );
+
+      setDiaryEntriesCount(
+        diaryData.length
+      );
+    } catch (error) {
+      console.error(
+        "Erro ao carregar perfil:",
+        error
+      );
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
 
-  const handleSave = () => {
-    const updatedUser = {
-      ...user,
-      name,
-      email,
-      role,
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+
+      await api.patch("/users/me", {
+        name,
+        email,
+      });
+
+      await refreshUser();
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error(
+        "Erro ao atualizar perfil:",
+        error
+      );
+
+      alert(
+        "Não foi possível atualizar o perfil."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount =
+    async () => {
+      const confirmed =
+        window.confirm(
+          "Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita."
+        );
+
+      if (!confirmed) return;
+
+      try {
+        setDeleting(true);
+
+        await api.delete("/users/me");
+
+        logout();
+
+        navigate("/login");
+      } catch (error) {
+        console.error(
+          "Erro ao excluir conta:",
+          error
+        );
+
+        alert(
+          "Não foi possível excluir sua conta."
+        );
+      } finally {
+        setDeleting(false);
+      }
     };
-    setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    setIsEditing(false);
-  };
 
-  const stats = {
-    coursesCompleted: 2,
-    coursesInProgress: 3,
-    lessonPlansCreated: 12,
-    diaryEntries: 8,
-  };
+  const stats = useMemo(() => {
+    const completed =
+      learningPaths.filter(
+        (path) =>
+          path.progress === 100
+      ).length;
 
-  const achievements = [
-    { id: 1, title: "Primeiros Passos", description: "Completou sua primeira trilha de aprendizado", earned: true },
-    { id: 2, title: "Aprendiz Dedicado", description: "Logou por 7 dias seguidos", earned: true },
-    { id: 3, title: "Mestre do Planejamento", description: "Criou 10 planos de aula", earned: true },
-    { id: 4, title: "Profissional Reflexivo", description: "Adicionou 5 entradas no diário", earned: true },
-    { id: 5, title: "Buscador de Conhecimento", description: "Baixou 10 recursos", earned: false },
-    { id: 6, title: "Professor Mestre", description: "Completou todas as trilhas de aprendizado", earned: false },
-  ];
+    const inProgress =
+      learningPaths.filter(
+        (path) =>
+          path.progress > 0 &&
+          path.progress < 100
+      ).length;
 
-  if (!user) return null;
+    return {
+      coursesCompleted: completed,
+
+      coursesInProgress:
+        inProgress,
+
+      lessonPlansCreated:
+        lessonPlansCount,
+
+      diaryEntries:
+        diaryEntriesCount,
+    };
+  }, [
+    learningPaths,
+    lessonPlansCount,
+    diaryEntriesCount,
+  ]);
+
+  const achievements =
+    useMemo(() => {
+      return [
+        {
+          id: 1,
+
+          title:
+            "Primeiros Passos",
+
+          description:
+            "Completou sua primeira trilha de aprendizado",
+
+          earned: true,
+        },
+
+        {
+          id: 2,
+
+          title:
+            "Professor Mestre",
+
+          description:
+            "Conclua 10 trilhas de aprendizagem",
+
+          earned: false,
+        },
+      ];
+    }, []);
+
+  if (!user || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+
+          <p className="text-muted-foreground">
+            Carregando perfil...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl mb-2">Meu Perfil</h1>
-        <p className="text-muted-foreground">
-          Gerencie sua conta e acompanhe seu progresso
-        </p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-primary/80 p-8 text-white shadow-xl">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex items-center gap-5">
+            <div className="bg-white/15 backdrop-blur-md rounded-3xl p-5 border border-white/20">
+              <User className="w-12 h-12" />
+            </div>
+
+            <div>
+              <p className="text-white/70 text-sm mb-1">
+                Perfil Profissional
+              </p>
+
+              <h1 className="text-4xl font-bold tracking-tight">
+                {user.name}
+              </h1>
+
+              <p className="text-white/80 mt-2">
+                Continue evoluindo sua jornada educacional 🚀
+              </p>
+            </div>
+          </div>
+
+          {!isEditing ? (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                setIsEditing(true)
+              }
+              className="rounded-2xl h-11 px-6 shadow-lg"
+            >
+              <Edit2 className="w-4 h-4 mr-2" />
+
+              Editar Perfil
+            </Button>
+          ) : (
+            <div className="flex items-center gap-8">
+              <Button
+                variant="destructive"
+                onClick={
+                  handleDeleteAccount
+                }
+                disabled={deleting}
+                className="rounded-2xl h-11 px-6 shadow-lg"
+              >
+                {deleting
+                  ? "Excluindo..."
+                  : "Excluir Conta"}
+              </Button>
+
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="rounded-2xl h-11 px-6 bg-white text-primary hover:bg-white/90 shadow-lg"
+              >
+                <Save className="w-4 h-4 mr-2" />
+
+                {saving
+                  ? "Salvando..."
+                  : "Salvar"}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="absolute right-0 top-0 h-full w-72 bg-white/5 blur-3xl" />
       </div>
 
-      {/* Profile Information */}
-      <Card>
+      {/* Profile Info */}
+      <Card className="border-0 shadow-lg rounded-3xl">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Informações do Perfil</CardTitle>
-            {!isEditing ? (
-              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                <Edit2 className="w-4 h-4 mr-2" />
-                Editar
-              </Button>
-            ) : (
-              <Button size="sm" onClick={handleSave} className="bg-primary hover:bg-primary/90">
-                <Save className="w-4 h-4 mr-2" />
-                Salvar
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-6 mb-6">
-            <div className="bg-primary rounded-full p-6">
-              <User className="w-12 h-12 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold">{user.name}</h3>
-              <p className="text-muted-foreground">{user.role}</p>
-            </div>
-          </div>
+          <CardTitle className="text-2xl">
+            Informações do Perfil
+          </CardTitle>
 
-          <div className="space-y-4">
+          <CardDescription>
+            Gerencie seus dados pessoais
+            e preferências da conta
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome Completo</Label>
+              <Label>
+                Nome Completo
+              </Label>
+
               <Input
-                id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) =>
+                  setName(
+                    e.target.value
+                  )
+                }
                 disabled={!isEditing}
-                className="bg-white"
+                className="h-12 rounded-2xl bg-white"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
+              <Label>E-mail</Label>
+
               <Input
-                id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) =>
+                  setEmail(
+                    e.target.value
+                  )
+                }
                 disabled={!isEditing}
-                className="bg-white"
+                className="h-12 rounded-2xl bg-white"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role">Função</Label>
-              {isEditing ? (
-                <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger className="bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="teacher">Professor(a)</SelectItem>
-                    <SelectItem value="coordinator">Coordenador(a) Pedagógico(a)</SelectItem>
-                    <SelectItem value="special-ed">Profissional de Educação Especial</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input
-                  id="role"
-                  value={role}
-                  disabled
-                  className="bg-white"
-                />
-              )}
+            <div className="space-y-2 md:col-span-2">
+              <Label>Função</Label>
+
+              <Input
+                value={
+                  ROLE_LABELS[
+                    user.role
+                  ] || user.role
+                }
+                disabled
+                className="h-12 rounded-2xl bg-white"
+              />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Statistics */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Suas Estatísticas</CardTitle>
-          <CardDescription>Acompanhe sua jornada de aprendizado</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 rounded-lg bg-muted/50">
-              <BookOpen className="w-6 h-6 mx-auto mb-2 text-primary" />
-              <div className="text-2xl font-semibold">{stats.coursesCompleted}</div>
-              <div className="text-xs text-muted-foreground">Cursos Completados</div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+        <Card className="border-0 shadow-md rounded-3xl">
+          <CardContent className="p-6">
+            <div className="bg-primary/10 p-3 rounded-2xl w-fit mb-4">
+              <BookOpen className="w-6 h-6 text-primary" />
             </div>
-            <div className="text-center p-4 rounded-lg bg-muted/50">
-              <BookOpen className="w-6 h-6 mx-auto mb-2 text-secondary" />
-              <div className="text-2xl font-semibold">{stats.coursesInProgress}</div>
-              <div className="text-xs text-muted-foreground">Em Progresso</div>
-            </div>
-            <div className="text-center p-4 rounded-lg bg-muted/50">
-              <Calendar className="w-6 h-6 mx-auto mb-2 text-primary" />
-              <div className="text-2xl font-semibold">{stats.lessonPlansCreated}</div>
-              <div className="text-xs text-muted-foreground">Planos de Aula</div>
-            </div>
-            <div className="text-center p-4 rounded-lg bg-muted/50">
-              <BookOpen className="w-6 h-6 mx-auto mb-2 text-secondary" />
-              <div className="text-2xl font-semibold">{stats.diaryEntries}</div>
-              <div className="text-xs text-muted-foreground">Entradas no Diário</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Overall Progress */}
-      <Card>
+            <div className="text-3xl font-bold">
+              {
+                stats.coursesCompleted
+              }
+            </div>
+
+            <p className="text-sm text-muted-foreground mt-1">
+              Trilhas Concluídas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md rounded-3xl">
+          <CardContent className="p-6">
+            <div className="bg-secondary/10 p-3 rounded-2xl w-fit mb-4">
+              <Target className="w-6 h-6 text-secondary" />
+            </div>
+
+            <div className="text-3xl font-bold">
+              {
+                stats.coursesInProgress
+              }
+            </div>
+
+            <p className="text-sm text-muted-foreground mt-1">
+              Em Progresso
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md rounded-3xl">
+          <CardContent className="p-6">
+            <div className="bg-primary/10 p-3 rounded-2xl w-fit mb-4">
+              <Calendar className="w-6 h-6 text-primary" />
+            </div>
+
+            <div className="text-3xl font-bold">
+              {
+                stats.lessonPlansCreated
+              }
+            </div>
+
+            <p className="text-sm text-muted-foreground mt-1">
+              Planos Criados
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-md rounded-3xl">
+          <CardContent className="p-6">
+            <div className="bg-secondary/10 p-3 rounded-2xl w-fit mb-4">
+              <Sparkles className="w-6 h-6 text-secondary" />
+            </div>
+
+            <div className="text-3xl font-bold">
+              {stats.diaryEntries}
+            </div>
+
+            <p className="text-sm text-muted-foreground mt-1">
+              Reflexões no Diário
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Progress */}
+      <Card className="border-0 shadow-lg rounded-3xl">
         <CardHeader>
-          <CardTitle>Progresso de Aprendizagem</CardTitle>
-          <CardDescription>Sua conclusão geral em todas as trilhas</CardDescription>
+          <CardTitle className="text-2xl">
+            Progresso de Aprendizagem
+          </CardTitle>
+
+          <CardDescription>
+            Seu avanço nas trilhas e conteúdos educacionais
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span>Fundamentos do Ensino Inclusivo</span>
-              <span className="font-medium">45%</span>
+
+        <CardContent className="space-y-6">
+          {learningPaths.filter(
+            (path) =>
+              path.progress > 0 &&
+              path.progress < 100
+          ).length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-muted-foreground">
+                Você ainda não possui trilhas em andamento.
+              </p>
             </div>
-            <Progress value={45} className="h-2" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span>Estratégias de Apoio ao TDAH</span>
-              <span className="font-medium">20%</span>
-            </div>
-            <Progress value={20} className="h-2" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span>Diferenciação em Sala de Aula</span>
-              <span className="font-medium">60%</span>
-            </div>
-            <Progress value={60} className="h-2" />
-          </div>
+          ) : (
+            learningPaths
+              .filter(
+                (path) =>
+                  path.progress > 0 &&
+                  path.progress < 100
+              )
+              .map((path) => (
+                <div
+                  key={path.id}
+                  className="space-y-2"
+                >
+                  <div className="flex items-center justify-between text-sm">
+                    <span>
+                      {path.title}
+                    </span>
+
+                    <span className="font-semibold">
+                      {path.progress}%
+                    </span>
+                  </div>
+
+                  <Progress
+                    value={
+                      path.progress
+                    }
+                    className="h-3 rounded-full"
+                  />
+                </div>
+              ))
+          )}
         </CardContent>
       </Card>
 
       {/* Achievements */}
-      <Card>
+      <Card className="border-0 shadow-lg rounded-3xl">
         <CardHeader>
-          <CardTitle>Conquistas</CardTitle>
-          <CardDescription>Marcos que você alcançou em sua jornada</CardDescription>
+          <CardTitle className="text-2xl">
+            Conquistas
+          </CardTitle>
+
+          <CardDescription>
+            Marcos alcançados durante
+            sua jornada na plataforma
+          </CardDescription>
         </CardHeader>
+
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {achievements.map((achievement) => (
-              <div
-                key={achievement.id}
-                className={`flex items-start gap-3 p-4 rounded-lg border ${
-                  achievement.earned
-                    ? "bg-secondary/5 border-secondary/20"
-                    : "bg-muted/30 border-muted opacity-60"
-                }`}
-              >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {achievements.map(
+              (achievement) => (
                 <div
-                  className={`p-2 rounded-lg ${
-                    achievement.earned ? "bg-secondary/10" : "bg-muted"
-                  }`}
+                  key={achievement.id}
+                  className={`
+                    rounded-3xl border p-5
+                    transition-all duration-300
+                    ${
+                      achievement.earned
+                        ? "bg-secondary/5 border-secondary/20 hover:shadow-md"
+                        : "bg-muted/30 border-muted opacity-70"
+                    }
+                  `}
                 >
-                  <Award
-                    className={`w-5 h-5 ${
-                      achievement.earned ? "text-secondary" : "text-muted-foreground"
-                    }`}
-                  />
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`
+                        p-3 rounded-2xl
+                        ${
+                          achievement.earned
+                            ? "bg-secondary/10"
+                            : "bg-muted"
+                        }
+                      `}
+                    >
+                      <Trophy
+                        className={`
+                          w-5 h-5
+                          ${
+                            achievement.earned
+                              ? "text-secondary"
+                              : "text-muted-foreground"
+                          }
+                        `}
+                      />
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <h4 className="font-semibold">
+                          {
+                            achievement.title
+                          }
+                        </h4>
+
+                        {achievement.earned && (
+                          <Badge className="rounded-full bg-secondary/10 text-secondary hover:bg-secondary/10">
+                            Conquistada
+                          </Badge>
+                        )}
+                      </div>
+
+                      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                        {
+                          achievement.description
+                        }
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-sm">{achievement.title}</h4>
-                  <p className="text-xs text-muted-foreground">
-                    {achievement.description}
-                  </p>
-                  {achievement.earned && (
-                    <Badge className="mt-2 bg-secondary/10 text-secondary hover:bg-secondary/10 text-xs">
-                      Conquistada
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         </CardContent>
       </Card>
