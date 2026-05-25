@@ -194,7 +194,8 @@ export default function Diagnosis() {
             </h3>
 
             <RadioGroup
-              value={currentAnswer}
+              key={questions[currentQuestion].id}
+              value={currentAnswer ?? ""}
               onValueChange={handleAnswer}
               className="space-y-3"
             >
