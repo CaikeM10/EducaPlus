@@ -7,6 +7,7 @@ export type LessonPlan = {
   strategies: string[];
   inclusions: string[];
   createdAt: string;
+  updatedAt?: string;
 };
 
 export type CreateLessonPlanInput = {
@@ -17,3 +18,5 @@ export type CreateLessonPlanInput = {
   strategies: string[];
   inclusions: string[];
 };
+
+export type UpdateLessonPlanInput = Partial<CreateLessonPlanInput>;

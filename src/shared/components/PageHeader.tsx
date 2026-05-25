@@ -5,6 +5,7 @@ type PageHeaderProps = {
   title: string;
   description?: string;
   icon?: ReactNode;
+  action?: ReactNode;
   metricLabel?: string;
   metricValue?: string | number;
 };
@@ -14,6 +15,7 @@ export function PageHeader({
   title,
   description,
   icon,
+  action,
   metricLabel,
   metricValue,
 }: PageHeaderProps) {
@@ -38,6 +40,7 @@ export function PageHeader({
             )}
           </div>
         </div>
+        {action}
         {metricLabel && (
           <div className="min-w-36 rounded-xl border border-white/20 bg-white/10 p-4">
             <p className="text-sm text-white/70">{metricLabel}</p>

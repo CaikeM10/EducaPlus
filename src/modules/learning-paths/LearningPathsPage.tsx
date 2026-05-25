@@ -1,15 +1,12 @@
 import { BookOpen, GraduationCap } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link } from "react-router";
-import { Button } from "../../app/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../app/components/ui/card";
-import { Progress } from "../../app/components/ui/progress";
 import { DataToolbar } from "../../shared/components/DataToolbar";
 import { EmptyState } from "../../shared/components/EmptyState";
 import { ErrorState } from "../../shared/components/ErrorState";
 import { LoadingState } from "../../shared/components/LoadingState";
 import { PageHeader } from "../../shared/components/PageHeader";
 import { PaginationControls } from "../../shared/components/PaginationControls";
+import { LearningPathCard } from "./components/LearningPathCard";
 import { useLearningPaths } from "./hooks/useLearningPaths";
 
 export default function LearningPathsPage() {
@@ -49,26 +46,7 @@ export default function LearningPathsPage() {
         <>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
             {data.items.map((path) => (
-              <Card key={path.id} className="border-0 shadow-sm">
-                <CardHeader>
-                  <CardTitle>{path.title}</CardTitle>
-                  <CardDescription>{path.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {path.steps.length} aulas
-                    </span>
-                    <span className="font-medium">{path.progress}%</span>
-                  </div>
-                  <Progress value={path.progress} />
-                  <Link to={`/app/learning-paths/${path.id}`}>
-                    <Button className="w-full">
-                      {path.progress > 0 ? "Continuar" : "Iniciar"}
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+              <LearningPathCard key={path.id} path={path} />
             ))}
           </div>
           <PaginationControls meta={data.meta} onPageChange={setPage} />

@@ -1,4 +1,4 @@
-import { BookOpen, FileText } from "lucide-react";
+import { BookOpen, FileText, Filter } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../../app/components/ui/button";
 import { DataToolbar } from "../../shared/components/DataToolbar";
@@ -46,19 +46,27 @@ export default function LibraryPage() {
         }}
         placeholder="Buscar recursos..."
       >
-        <div className="flex flex-wrap gap-2">
+        <div className="flex w-full flex-col gap-2 md:w-auto">
+          <span className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
+            <Filter className="h-3.5 w-3.5" />
+            Categorias
+          </span>
+          <div className="flex flex-wrap gap-2">
           {categoryFilters.map((filter) => (
             <Button
               key={filter.label}
               variant={category === filter.value ? "default" : "outline"}
+              size="sm"
               onClick={() => {
                 setCategory(filter.value);
                 setPage(1);
               }}
+              className="min-w-20"
             >
               {filter.label}
             </Button>
           ))}
+          </div>
         </div>
       </DataToolbar>
       {loading && <LoadingState label="Carregando recursos..." />}

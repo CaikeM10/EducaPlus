@@ -6,8 +6,9 @@ import {
   createDiaryEntry,
   deleteDiaryEntry,
   listDiaryEntries,
+  updateDiaryEntry,
 } from "../services/diary.service";
-import { DiaryEntry } from "../types";
+import { DiaryEntry, DiaryEntryInput } from "../types";
 
 export function useDiary(params: PaginationParams) {
   const [entries, setEntries] = useState<PaginatedResponse<DiaryEntry> | null>(null);
@@ -34,7 +35,7 @@ export function useDiary(params: PaginationParams) {
     }
   }
 
-  async function create(input: { lessonPlanId: string; whatWorked: string }) {
+  async function create(input: DiaryEntryInput) {
     setSaving(true);
 
     try {
@@ -50,9 +51,20 @@ export function useDiary(params: PaginationParams) {
     await load();
   }
 
+  async function update(id: string, input: Partial<DiaryEntryInput>) {
+    setSaving(true);
+
+    try {
+      await updateDiaryEntry(id, input);
+      await load();
+    } finally {
+      setSaving(false);
+    }
+  }
+
   useEffect(() => {
     load();
   }, [params.page, params.search]);
 
-  return { entries, lessonPlans, loading, saving, error, create, remove };
+  return { entries, lessonPlans, loading, saving, error, create, update, remove };
 }

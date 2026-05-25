@@ -26,6 +26,25 @@ import {
   SelectValue,
 } from "../components/ui/select";
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string | string[];
+    };
+  };
+};
+
+function getErrorMessage(error: unknown) {
+  const apiError = error as ApiError;
+  const message = apiError.response?.data?.message;
+
+  if (Array.isArray(message)) {
+    return message.join("\n");
+  }
+
+  return message || "Erro ao cadastrar";
+}
+
 export default function Register() {
   const navigate = useNavigate();
 
@@ -69,12 +88,8 @@ export default function Register() {
       setOpen(false);
 
       navigate("/diagnosis");
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        "Erro ao cadastrar";
-
-      alert(message);
+    } catch (error) {
+      alert(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

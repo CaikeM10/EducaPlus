@@ -9,3 +9,7 @@ export async function listResources(params: PaginationParams) {
 
   return response.data;
 }
+
+export async function recordResourceDownload(resourceId: string) {
+  await api.post(`/resources/${resourceId}/download`);
+}

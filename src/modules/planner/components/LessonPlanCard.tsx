@@ -1,4 +1,4 @@
-import { Calendar, Trash2 } from "lucide-react";
+import { Calendar, Edit2, Trash2 } from "lucide-react";
 import { Badge } from "../../../app/components/ui/badge";
 import { Button } from "../../../app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../app/components/ui/card";
@@ -7,12 +7,14 @@ import { LessonPlan } from "../types";
 export function LessonPlanCard({
   plan,
   onDelete,
+  onEdit,
 }: {
   plan: LessonPlan;
   onDelete: (id: string) => void;
+  onEdit: (plan: LessonPlan) => void;
 }) {
   return (
-    <Card className="border-0 shadow-sm">
+    <Card className="border-0 shadow-sm transition-shadow hover:shadow-md">
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -22,9 +24,24 @@ export function LessonPlanCard({
               {new Date(plan.createdAt).toLocaleDateString("pt-BR")}
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => onDelete(plan.id)}>
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => onEdit(plan)}>
+              <Edit2 className="h-4 w-4" />
+              Editar
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (window.confirm("Excluir este plano de aula?")) {
+                  onDelete(plan.id);
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              Excluir
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

@@ -1,34 +1,20 @@
 import { api } from "../../../app/services/api";
 import { PaginatedResponse } from "../../../shared/types/api";
 import { LessonPlan } from "../../planner/types";
+import {
+  ActivityItem,
+  LearningPathSummary,
+  Recommendation,
+} from "../types";
+import { buildDashboardViewModel } from "../transformers/dashboard.transformer";
 
 type Diagnosis = {
   id: string;
 };
 
-type LearningPathSummary = {
-  id: string;
-  progress: number;
-};
-
-export type Recommendation = {
-  id: string;
-  reason: string;
-
-  learningPath?: {
-    id: string;
-    title: string;
-    description: string;
-  } | null;
-
-  resource?: {
-    title: string;
-    description?: string;
-  } | null;
-};
-
 export async function getDashboardData() {
-  const [plansResponse, pathsResponse, diagnosisResponse] = await Promise.all([
+  const [plansResponse, pathsResponse, diagnosisResponse, activityResponse] =
+    await Promise.all([
     api.get<PaginatedResponse<LessonPlan>>("/lesson-plans", {
       params: { limit: 1 },
     }),
@@ -39,16 +25,10 @@ export async function getDashboardData() {
     api.get<PaginatedResponse<Diagnosis>>("/diagnosis/me", {
       params: { limit: 1 },
     }),
+    api.get<ActivityItem[]>("/dashboard/recent-activity"),
   ]);
 
   const paths = pathsResponse.data.items;
-  const overallProgress =
-    paths.length === 0
-      ? 0
-      : Math.round(
-          paths.reduce((sum, path) => sum + (path.progress || 0), 0) /
-            paths.length,
-        );
 
   let recommendations: Recommendation[] = [];
   const diagnosis = diagnosisResponse.data.items[0];
@@ -56,14 +36,14 @@ export async function getDashboardData() {
   if (diagnosis) {
     const recommendationsResponse = await api.get<
       PaginatedResponse<Recommendation>
-    >(`/recommendations/${diagnosis.id}`, { params: { limit: 3 } });
+    >(`/recommendations/${diagnosis.id}`, { params: { limit: 20 } });
     recommendations = recommendationsResponse.data.items;
   }
 
-  return {
+  return buildDashboardViewModel({
     lessonPlanCount: plansResponse.data.meta.total,
-    learningPathCount: pathsResponse.data.meta.total,
-    overallProgress,
+    learningPaths: paths,
     recommendations,
-  };
+    recentActivities: activityResponse.data,
+  });
 }

@@ -4,8 +4,9 @@ import {
   createLessonPlan,
   deleteLessonPlan,
   listLessonPlans,
+  updateLessonPlan,
 } from "../services/lesson-plans.service";
-import { CreateLessonPlanInput, LessonPlan } from "../types";
+import { CreateLessonPlanInput, LessonPlan, UpdateLessonPlanInput } from "../types";
 
 export function useLessonPlans(params: PaginationParams) {
   const [data, setData] = useState<PaginatedResponse<LessonPlan> | null>(null);
@@ -42,9 +43,20 @@ export function useLessonPlans(params: PaginationParams) {
     await load();
   }
 
+  async function update(id: string, input: UpdateLessonPlanInput) {
+    setSaving(true);
+
+    try {
+      await updateLessonPlan(id, input);
+      await load();
+    } finally {
+      setSaving(false);
+    }
+  }
+
   useEffect(() => {
     load();
   }, [params.page, params.search]);
 
-  return { data, loading, saving, error, create, remove, reload: load };
+  return { data, loading, saving, error, create, update, remove, reload: load };
 }

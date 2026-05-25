@@ -1,5 +1,6 @@
 import { BookOpen, FileText, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "../../app/components/ui/card";
 import { DataToolbar } from "../../shared/components/DataToolbar";
 import { EmptyState } from "../../shared/components/EmptyState";
@@ -10,12 +11,14 @@ import { PaginationControls } from "../../shared/components/PaginationControls";
 import { LessonPlanCard } from "./components/LessonPlanCard";
 import { LessonPlanForm } from "./components/LessonPlanForm";
 import { useLessonPlans } from "./hooks/useLessonPlans";
+import { LessonPlan } from "./types";
 
 export default function PlannerPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [editingPlan, setEditingPlan] = useState<LessonPlan | null>(null);
   const params = useMemo(() => ({ page, limit: 6, search }), [page, search]);
-  const { data, loading, saving, error, create, remove } = useLessonPlans(params);
+  const { data, loading, saving, error, create, update, remove } = useLessonPlans(params);
 
   return (
     <div className="space-y-6">
@@ -31,11 +34,36 @@ export default function PlannerPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Criar novo plano
+            {editingPlan ? "Editar plano" : "Criar novo plano"}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <LessonPlanForm saving={saving} onSubmit={create} />
+          <LessonPlanForm
+            key={editingPlan?.id ?? "create"}
+            saving={saving}
+            mode={editingPlan ? "edit" : "create"}
+            initialValues={editingPlan ?? undefined}
+            onCancel={editingPlan ? () => setEditingPlan(null) : undefined}
+            onSubmit={async (input) => {
+              if (editingPlan) {
+                try {
+                  await update(editingPlan.id, input);
+                  setEditingPlan(null);
+                  toast.success("Plano atualizado com sucesso.");
+                } catch {
+                  toast.error("Não foi possível atualizar o plano.");
+                }
+                return;
+              }
+
+              try {
+                await create(input);
+                toast.success("Plano criado com sucesso.");
+              } catch {
+                toast.error("Não foi possível criar o plano.");
+              }
+            }}
+          />
         </CardContent>
       </Card>
       <DataToolbar
@@ -59,7 +87,19 @@ export default function PlannerPage() {
         <>
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
             {data.items.map((plan) => (
-              <LessonPlanCard key={plan.id} plan={plan} onDelete={remove} />
+              <LessonPlanCard
+                key={plan.id}
+                plan={plan}
+                onDelete={async (id) => {
+                  try {
+                    await remove(id);
+                    toast.success("Plano excluído com sucesso.");
+                  } catch {
+                    toast.error("Não foi possível excluir o plano.");
+                  }
+                }}
+                onEdit={setEditingPlan}
+              />
             ))}
           </div>
           <PaginationControls meta={data.meta} onPageChange={setPage} />

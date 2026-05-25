@@ -8,6 +8,10 @@ export type AuthUser = {
   name: string;
   email: string;
   role: UserRole;
+  createdAt?: string;
+  updatedAt?: string;
+  lastLoginAt?: string | null;
+  isReturningUser?: boolean;
 };
 
 type AuthContextType = {

@@ -1,6 +1,6 @@
 import { api } from "../../../app/services/api";
 import { PaginatedResponse, PaginationParams } from "../../../shared/types/api";
-import { CreateLessonPlanInput, LessonPlan } from "../types";
+import { CreateLessonPlanInput, LessonPlan, UpdateLessonPlanInput } from "../types";
 
 export async function listLessonPlans(params: PaginationParams) {
   const response = await api.get<PaginatedResponse<LessonPlan>>("/lesson-plans", {
@@ -17,4 +17,9 @@ export async function createLessonPlan(input: CreateLessonPlanInput) {
 
 export async function deleteLessonPlan(id: string) {
   await api.delete(`/lesson-plans/${id}`);
+}
+
+export async function updateLessonPlan(id: string, input: UpdateLessonPlanInput) {
+  const response = await api.put<LessonPlan>(`/lesson-plans/${id}`, input);
+  return response.data;
 }

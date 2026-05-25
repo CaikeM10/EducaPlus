@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
-import { getDashboardData, Recommendation } from "../services/dashboard.service";
+import { getDashboardData } from "../services/dashboard.service";
+import { DashboardViewModel } from "../types";
 
 export function useDashboard() {
-  const [data, setData] = useState<{
-    lessonPlanCount: number;
-    learningPathCount: number;
-    overallProgress: number;
-    recommendations: Recommendation[];
-  } | null>(null);
+  const [data, setData] = useState<DashboardViewModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
