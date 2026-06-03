@@ -82,7 +82,10 @@ Versão MVP funcional com módulos de:
 
 ## Autor
 
-Caike Marinho
+Caike Marinho e João Pedro.
 
-Desenvolvedor Full Stack e fundador da Codecrat.dev.
+Co-fundadores da Next Code.
+
+
+
 
