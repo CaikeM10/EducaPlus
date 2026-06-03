@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { AlertTriangle, BookOpen, Calendar, Edit2, Save, Sparkles, Target, User } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpen,
+  Calendar,
+  Edit2,
+  Save,
+  Sparkles,
+  Target,
+  User,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "../../app/components/ui/button";
@@ -98,7 +107,11 @@ export default function ProfilePage() {
         eyebrow="Perfil profissional"
         title={user.name}
         description="Gerencie seus dados e acompanhe seu uso real da plataforma."
-        icon={<User className="h-6 w-6" />}
+        icon={
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/15 text-2xl font-bold">
+            {user.name.charAt(0).toUpperCase()}
+          </div>
+        }
         action={
           isEditing ? (
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -112,13 +125,22 @@ export default function ProfilePage() {
                 <AlertTriangle className="mr-2 h-4 w-4" />
                 {deleting ? "Excluindo..." : "Excluir conta"}
               </Button>
-              <Button size="lg" onClick={handleSave} disabled={saving} className="shadow-sm">
+              <Button
+                size="lg"
+                onClick={handleSave}
+                disabled={saving}
+                className="shadow-sm"
+              >
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? "Salvando..." : "Salvar alterações"}
               </Button>
             </div>
           ) : (
-            <Button size="lg" onClick={() => setIsEditing(true)} className="shadow-sm">
+            <Button
+              size="lg"
+              onClick={() => setIsEditing(true)}
+              className="shadow-sm"
+            >
               <Edit2 className="mr-2 h-4 w-4" />
               Editar perfil
             </Button>
@@ -127,11 +149,24 @@ export default function ProfilePage() {
       />
 
       {error && <ErrorState message={error} onRetry={refresh} />}
+      <div className="flex items-center gap-3">
+        <div className="rounded-2xl bg-primary/10 p-3">
+          <User className="h-5 w-5 text-primary" />
+        </div>
 
-      <Card className="border-0 shadow-sm">
+        <div>
+          <CardTitle>Informações do perfil</CardTitle>
+          <CardDescription>
+            Dados usados para autenticação e identificação do usuário.
+          </CardDescription>
+        </div>
+      </div>
+      <Card>
         <CardHeader>
           <CardTitle>Informações do perfil</CardTitle>
-          <CardDescription>Dados usados para autenticação e identificação do usuário.</CardDescription>
+          <CardDescription>
+            Dados usados para autenticação e identificação do usuário.
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
@@ -157,7 +192,11 @@ export default function ProfilePage() {
 
           <div className="space-y-2 md:col-span-2">
             <Label>Perfil de acesso</Label>
-            <Input value={ROLE_LABELS[user.role] || user.role} disabled className="h-11" />
+            <Input
+              value={ROLE_LABELS[user.role] || user.role}
+              disabled
+              className="h-11"
+            />
           </div>
         </CardContent>
       </Card>
@@ -165,26 +204,49 @@ export default function ProfilePage() {
       {summary && (
         <>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard title="Trilhas concluídas" value={summary.learningPathsCompleted} icon={<BookOpen className="h-5 w-5" />} />
-            <StatCard title="Em progresso" value={summary.learningPathsInProgress} icon={<Target className="h-5 w-5" />} />
-            <StatCard title="Planos criados" value={summary.lessonPlansCount} icon={<Calendar className="h-5 w-5" />} />
-            <StatCard title="Reflexões no diário" value={summary.diaryEntriesCount} icon={<Sparkles className="h-5 w-5" />} />
+            <StatCard
+              title="Trilhas concluídas"
+              value={summary.learningPathsCompleted}
+              icon={<BookOpen className="h-5 w-5" />}
+            />
+            <StatCard
+              title="Em progresso"
+              value={summary.learningPathsInProgress}
+              icon={<Target className="h-5 w-5" />}
+            />
+            <StatCard
+              title="Planos criados"
+              value={summary.lessonPlansCount}
+              icon={<Calendar className="h-5 w-5" />}
+            />
+            <StatCard
+              title="Reflexões no diário"
+              value={summary.diaryEntriesCount}
+              icon={<Sparkles className="h-5 w-5" />}
+            />
           </div>
 
-          <Card className="border-0 shadow-sm">
+          <Card>
             <CardHeader>
               <CardTitle>Progresso de aprendizagem</CardTitle>
-              <CardDescription>Trilhas iniciadas com base nos dados atuais do backend.</CardDescription>
+              <CardDescription>
+                Trilhas iniciadas com base nos dados atuais do backend.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               {summary.activeLearningPaths.length === 0 ? (
-                <EmptyState title="Nenhuma trilha em andamento" description="As trilhas iniciadas aparecerão aqui." />
+                <EmptyState
+                  title="Nenhuma trilha em andamento"
+                  description="As trilhas iniciadas aparecerão aqui."
+                />
               ) : (
                 summary.activeLearningPaths.map((path) => (
                   <div key={path.id} className="space-y-2">
                     <div className="flex items-center justify-between gap-4 text-sm">
                       <span className="font-medium">{path.title}</span>
-                      <span>{path.progress}%</span>
+                      <span className="font-semibold text-primary">
+                        {path.progress}%
+                      </span>
                     </div>
                     <Progress value={path.progress} />
                   </div>
@@ -192,7 +254,7 @@ export default function ProfilePage() {
               )}
             </CardContent>
           </Card>
-
+          <div className="grid gap-6 lg:grid-cols-[320px_1fr]"> </div>
           <AchievementsSection
             achievements={achievements}
             loading={achievementsLoading}

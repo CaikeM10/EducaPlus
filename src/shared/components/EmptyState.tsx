@@ -8,18 +8,35 @@ type EmptyStateProps = {
   action?: ReactNode;
 };
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+}: EmptyStateProps) {
   return (
-    <Card className="border-0 shadow-sm">
-      <CardContent className="py-16 text-center">
-        {icon && <div className="mb-4 flex justify-center text-muted-foreground">{icon}</div>}
-        <h3 className="text-lg font-semibold">{title}</h3>
-        {description && (
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            {description}
-          </p>
-        )}
-        {action && <div className="mt-6 flex justify-center">{action}</div>}
+    <Card className="overflow-hidden">
+      <CardContent className="relative py-20">
+        {/* Glow */}
+        <div className="absolute left-1/2 top-0 h-32 w-32 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+
+        <div className="relative flex flex-col items-center text-center">
+          {icon && (
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-primary/10 bg-primary/5 text-primary">
+              {icon}
+            </div>
+          )}
+
+          <h3 className="text-2xl font-bold tracking-tight">{title}</h3>
+
+          {description && (
+            <p className="mt-3 max-w-lg text-sm leading-7 text-muted-foreground">
+              {description}
+            </p>
+          )}
+
+          {action && <div className="mt-8">{action}</div>}
+        </div>
       </CardContent>
     </Card>
   );

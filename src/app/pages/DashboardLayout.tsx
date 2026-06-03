@@ -1,10 +1,6 @@
-import { useState } from "react";
-import {
-  Outlet,
-  useNavigate,
-  Link,
-  useLocation,
-} from "react-router";
+import { useMemo, useState } from "react";
+
+import { Outlet, useNavigate, Link, useLocation } from "react-router";
 
 import {
   LayoutDashboard,
@@ -17,6 +13,9 @@ import {
   Menu,
   X,
   Sparkles,
+  ShieldCheck,
+  Stethoscope,
+  BarChart3,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -28,10 +27,7 @@ export default function DashboardLayout() {
 
   const location = useLocation();
 
-  const [
-    mobileMenuOpen,
-    setMobileMenuOpen,
-  ] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { logout, user } = useAuth();
 
@@ -41,62 +37,99 @@ export default function DashboardLayout() {
     navigate("/login");
   };
 
-  const navItems = [
-    {
-      path: "/app",
-      label: "Painel",
-      icon: LayoutDashboard,
-    },
-    {
-      path: "/app/learning-paths",
-      label:
-        "Trilhas de Aprendizado",
-      icon: BookOpen,
-    },
-    {
-      path: "/app/planner",
-      label: "Planejador",
-      icon: Calendar,
-    },
-    {
-      path: "/app/library",
-      label: "Biblioteca",
-      icon: Library,
-    },
-    {
-      path: "/app/diary",
-      label: "Diário",
-      icon: BookMarked,
-    },
-  ];
+  const roleLabels = {
+    ADMIN: "Administrador",
+    TEACHER: "Professor",
+    COORDINATOR: "Coordenador",
+    SPECIAL_ED: "Especialista AEE",
+  };
+
+  // IDENTIFICA SE É EDUCADOR ESPECIAL
+  const isSpecialEd = user?.role === "SPECIAL_ED";
+
+  const navItems = useMemo(() => {
+    const baseItems = [
+      {
+        path: "/app",
+        label: "Painel",
+        icon: LayoutDashboard,
+      },
+
+      // TRILHAS APENAS PARA PERFIS DE APRENDIZAGEM
+      !isSpecialEd && {
+        path: "/app/learning-paths",
+        label: "Trilhas",
+        icon: BookOpen,
+      },
+
+      {
+        path: "/app/planner",
+        label: "Planejador",
+        icon: Calendar,
+      },
+
+      {
+        path: "/app/library",
+        label: "Biblioteca",
+        icon: Library,
+      },
+
+      {
+        path: "/app/diary",
+        label: "Diário",
+        icon: BookMarked,
+      },
+    ].filter(Boolean);
+
+    // COORDENADOR
+    if (user?.role === "COORDINATOR") {
+      baseItems.push({
+        path: "/app/analytics",
+        label: "Relatórios",
+        icon: BarChart3,
+      });
+    }
+
+    // EDUCADOR ESPECIAL
+    if (user?.role === "SPECIAL_ED") {
+      baseItems.push({
+        path: "/app/diagnosis",
+        label: "Diagnóstico",
+        icon: Stethoscope,
+      });
+    }
+
+    // ADMIN
+    if (user?.role === "ADMIN") {
+      baseItems.push({
+        path: "/app/admin",
+        label: "Administração",
+        icon: ShieldCheck,
+      });
+    }
+
+    return baseItems;
+  }, [user, isSpecialEd]);
 
   const isActive = (path: string) => {
     if (path === "/app") {
-      return (
-        location.pathname === path
-      );
+      return location.pathname === path;
     }
 
-    return location.pathname.startsWith(
-      path
-    );
+    return location.pathname.startsWith(path);
   };
 
   if (!user) return null;
 
   return (
     <div className="min-h-screen bg-muted/20 flex">
-      {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-40 md:hidden"
-          onClick={() =>
-            setMobileMenuOpen(false)
-          }
+          onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`
           fixed md:sticky top-0 left-0 z-50
@@ -113,7 +146,7 @@ export default function DashboardLayout() {
           }
         `}
       >
-        {/* Logo */}
+        {/* LOGO */}
         <div className="p-6 border-b border-border/50">
           <div className="flex items-center gap-3">
             <div className="bg-primary rounded-2xl p-3 shadow-md">
@@ -121,52 +154,52 @@ export default function DashboardLayout() {
             </div>
 
             <div>
-              <h1 className="font-bold text-xl tracking-tight">
-                EducaPlus
-              </h1>
+              <h1 className="font-bold text-xl tracking-tight">EducaPlus</h1>
 
               <p className="text-xs text-muted-foreground">
-                Plataforma Educacional
+                Educação Inclusiva Inteligente
               </p>
             </div>
           </div>
         </div>
 
-        {/* User */}
+        {/* USER CARD */}
         <div className="px-4 pt-6">
           <div className="rounded-2xl bg-gradient-to-r from-primary/10 to-primary/5 p-4 border border-primary/10">
             <div className="flex items-center gap-3">
               <div className="bg-primary text-white rounded-xl w-12 h-12 flex items-center justify-center font-semibold text-lg shadow-sm">
-                {user?.name?.charAt(0)}
+                {user.name?.charAt(0)}
               </div>
 
               <div className="flex-1 overflow-hidden">
-                <p className="font-semibold truncate">
-                  {user?.name}
-                </p>
+                <p className="font-semibold truncate">{user.name}</p>
 
                 <p className="text-xs text-muted-foreground truncate">
-                  {user?.email}
+                  {user.email}
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 flex items-center gap-2 text-xs text-primary font-medium">
-              <Sparkles className="w-3.5 h-3.5" />
-              Aprendizado ativo
+            <div className="mt-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                <Sparkles className="w-3.5 h-3.5" />
+                Sessão ativa
+              </div>
+
+              <span className="text-[11px] bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
+                {roleLabels[user.role]}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Navigation */}
+        {/* NAVIGATION */}
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          {navItems.map((item) => (
+          {navItems.map((item: any) => (
             <Link
               key={item.path}
               to={item.path}
-              onClick={() =>
-                setMobileMenuOpen(false)
-              }
+              onClick={() => setMobileMenuOpen(false)}
               className={`
                 group flex items-center gap-3
                 px-4 py-3 rounded-2xl
@@ -181,20 +214,15 @@ export default function DashboardLayout() {
             >
               <item.icon className="w-5 h-5" />
 
-              <span className="text-sm">
-                {item.label}
-              </span>
+              <span className="text-sm">{item.label}</span>
             </Link>
           ))}
         </nav>
 
-        {/* Bottom Actions */}
+        {/* FOOTER */}
         <div className="p-4 border-t border-border/50 space-y-2">
           <Link
             to="/app/profile"
-            onClick={() =>
-              setMobileMenuOpen(false)
-            }
             className={`
               flex items-center gap-3
               px-4 py-3 rounded-2xl
@@ -209,9 +237,7 @@ export default function DashboardLayout() {
           >
             <User className="w-5 h-5" />
 
-            <span className="text-sm">
-              Perfil
-            </span>
+            <span className="text-sm">Perfil</span>
           </Link>
 
           <Button
@@ -221,16 +247,14 @@ export default function DashboardLayout() {
           >
             <LogOut className="w-5 h-5" />
 
-            <span className="text-sm">
-              Sair
-            </span>
+            <span className="text-sm">Sair</span>
           </Button>
         </div>
       </aside>
 
-      {/* Main Area */}
+      {/* MAIN */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* Mobile Header */}
+        {/* MOBILE HEADER */}
         <header className="md:hidden sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-border/50 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-primary rounded-xl p-2">
@@ -238,12 +262,10 @@ export default function DashboardLayout() {
             </div>
 
             <div>
-              <h1 className="font-bold">
-                EducaPlus
-              </h1>
+              <h1 className="font-bold">EducaPlus</h1>
 
               <p className="text-xs text-muted-foreground">
-                Painel Educacional
+                Plataforma Inclusiva
               </p>
             </div>
           </div>
@@ -252,11 +274,7 @@ export default function DashboardLayout() {
             variant="ghost"
             size="icon"
             className="rounded-xl"
-            onClick={() =>
-              setMobileMenuOpen(
-                !mobileMenuOpen
-              )
-            }
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -266,7 +284,7 @@ export default function DashboardLayout() {
           </Button>
         </header>
 
-        {/* Content */}
+        {/* CONTENT */}
         <main className="flex-1 p-4 md:p-8">
           <div className="max-w-7xl mx-auto">
             <Outlet />

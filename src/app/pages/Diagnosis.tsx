@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import { useNavigate } from "react-router";
 
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Sparkles, Brain, CheckCircle2 } from "lucide-react";
 
 import { api } from "../services/api";
 
 import { Button } from "../components/ui/button";
+
 import {
   Card,
   CardContent,
@@ -13,11 +15,11 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+
 import { Progress } from "../components/ui/progress";
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "../components/ui/radio-group";
+
+import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
+
 import { Label } from "../components/ui/label";
 
 const questions = [
@@ -25,42 +27,94 @@ const questions = [
     id: 1,
     question: "Quantos anos de experiência de ensino você possui?",
     options: [
-      { value: "0-2", label: "0-2 anos" },
-      { value: "3-5", label: "3-5 anos" },
-      { value: "6-10", label: "6-10 anos" },
-      { value: "10+", label: "Mais de 10 anos" },
+      {
+        value: "0-2",
+        label: "0-2 anos",
+      },
+      {
+        value: "3-5",
+        label: "3-5 anos",
+      },
+      {
+        value: "6-10",
+        label: "6-10 anos",
+      },
+      {
+        value: "10+",
+        label: "Mais de 10 anos",
+      },
     ],
   },
+
   {
     id: 2,
     question: "Você já trabalhou com alunos com TDAH?",
     options: [
-      { value: "never", label: "Nunca" },
-      { value: "rarely", label: "Raramente" },
-      { value: "sometimes", label: "Às vezes" },
-      { value: "frequently", label: "Frequentemente" },
+      {
+        value: "never",
+        label: "Nunca",
+      },
+      {
+        value: "rarely",
+        label: "Raramente",
+      },
+      {
+        value: "sometimes",
+        label: "Às vezes",
+      },
+      {
+        value: "frequently",
+        label: "Frequentemente",
+      },
     ],
   },
+
   {
     id: 3,
     question: "Você já trabalhou com alunos no espectro autista?",
     options: [
-      { value: "never", label: "Nunca" },
-      { value: "rarely", label: "Raramente" },
-      { value: "sometimes", label: "Às vezes" },
-      { value: "frequently", label: "Frequentemente" },
+      {
+        value: "never",
+        label: "Nunca",
+      },
+      {
+        value: "rarely",
+        label: "Raramente",
+      },
+      {
+        value: "sometimes",
+        label: "Às vezes",
+      },
+      {
+        value: "frequently",
+        label: "Frequentemente",
+      },
     ],
   },
+
   {
     id: 4,
     question: "Você já trabalhou com alunos com dislexia?",
     options: [
-      { value: "never", label: "Nunca" },
-      { value: "rarely", label: "Raramente" },
-      { value: "sometimes", label: "Às vezes" },
-      { value: "frequently", label: "Frequentemente" },
+      {
+        value: "never",
+        label: "Nunca",
+      },
+      {
+        value: "rarely",
+        label: "Raramente",
+      },
+      {
+        value: "sometimes",
+        label: "Às vezes",
+      },
+      {
+        value: "frequently",
+        label: "Frequentemente",
+      },
     ],
   },
+
   {
     id: 5,
     question:
@@ -89,17 +143,43 @@ const questions = [
 export default function Diagnosis() {
   const navigate = useNavigate();
 
-  const [currentQuestion, setCurrentQuestion] =
-    useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
 
-  const [answers, setAnswers] = useState<
-    Record<number, string>
-  >({});
+  const [answers, setAnswers] = useState<Record<number, string>>({});
 
   const [loading, setLoading] = useState(false);
 
-  const progress =
-    ((currentQuestion + 1) / questions.length) * 100;
+  // REDIRECIONA EDUCADORES ESPECIAIS
+  useEffect(() => {
+    const storage = localStorage.getItem("@educaplus:user");
+
+    if (!storage) return;
+
+    const parsedUser = JSON.parse(storage);
+
+    console.log("USUÁRIO:", parsedUser);
+
+    const role =
+      parsedUser?.role ||
+      parsedUser?.user?.role ||
+      parsedUser?.profile ||
+      parsedUser?.type;
+
+    console.log("ROLE:", role);
+
+    const specialRoles = [
+      "EDUCADOR_ESPECIAL",
+      "educador_especial",
+      "SPECIAL_EDUCATOR",
+      "educador",
+    ];
+
+    if (specialRoles.includes(role)) {
+      navigate("/app", { replace: true });
+    }
+  }, [navigate]);
+
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
 
   const handleAnswer = (value: string) => {
     setAnswers({
@@ -138,147 +218,185 @@ export default function Diagnosis() {
     }
   };
 
-  const currentAnswer =
-    answers[questions[currentQuestion].id];
+  const currentAnswer = answers[questions[currentQuestion].id];
 
-  const isLastQuestion =
-    currentQuestion === questions.length - 1;
+  const isLastQuestion = currentQuestion === questions.length - 1;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/20 p-4">
-      <Card className="w-full max-w-2xl border-0 shadow-xl">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex justify-center">
-            <div className="bg-primary rounded-2xl p-4 shadow-md">
-              <GraduationCap className="w-8 h-8 text-white" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <CardTitle className="text-3xl font-bold">
-              Diagnóstico Inicial
-            </CardTitle>
-
-            <CardDescription className="text-base">
-              Ajude-nos a personalizar sua experiência
-              respondendo algumas perguntas
-            </CardDescription>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-8">
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>
-                Pergunta {currentQuestion + 1} de{" "}
-                {questions.length}
-              </span>
-
-              <span>
-                {Math.round(progress)}%
-              </span>
+    <div className="min-h-screen bg-muted/20 flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-center">
+        {/* HERO */}
+        <div className="hidden lg:block space-y-8">
+          <div className="space-y-5">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-primary text-sm font-medium">
+              <Sparkles className="h-4 w-4" />
+              Diagnóstico Inteligente
             </div>
 
-            <Progress
-              value={progress}
-              className="h-2"
-            />
+            <div className="space-y-4">
+              <h1 className="text-5xl font-bold leading-tight">
+                Personalize sua experiência educacional
+              </h1>
+
+              <p className="text-lg text-muted-foreground leading-8">
+                O EDUCAPLUS utiliza seu perfil pedagógico para recomendar
+                trilhas, estratégias inclusivas e ferramentas alinhadas às suas
+                necessidades profissionais.
+              </p>
+            </div>
           </div>
 
           <div className="space-y-5">
-            <h3 className="text-xl font-semibold leading-relaxed">
-              {
-                questions[currentQuestion]
-                  .question
-              }
-            </h3>
+            <div className="flex items-start gap-4">
+              <div className="bg-primary/10 rounded-2xl p-3">
+                <Brain className="h-6 w-6 text-primary" />
+              </div>
 
-            <RadioGroup
-              key={questions[currentQuestion].id}
-              value={currentAnswer ?? ""}
-              onValueChange={handleAnswer}
-              className="space-y-3"
-            >
-              {questions[
-                currentQuestion
-              ].options.map((option) => {
-                const isSelected =
-                  currentAnswer === option.value;
+              <div>
+                <h3 className="font-semibold text-lg">
+                  Recomendações inteligentes
+                </h3>
 
-                return (
-                  <Label
-                    key={option.value}
-                    htmlFor={option.value}
-                    className={`
-                      flex items-center gap-4 rounded-xl border p-4
-                      cursor-pointer transition-all duration-200
-                      hover:border-primary/50 hover:bg-muted/40
-                      ${
-                        isSelected
-                          ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20"
-                          : "border-border"
-                      }
-                    `}
-                  >
-                    <RadioGroupItem
-                      value={option.value}
-                      id={option.value}
-                      className="mt-0.5"
-                    />
+                <p className="text-muted-foreground leading-7">
+                  Conteúdos personalizados conforme sua experiência e interesses
+                  pedagógicos.
+                </p>
+              </div>
+            </div>
 
-                    <div className="flex flex-col">
-                      <span className="font-medium text-sm">
-                        {option.label}
-                      </span>
+            <div className="flex items-start gap-4">
+              <div className="bg-primary/10 rounded-2xl p-3">
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+              </div>
 
-                      <span className="text-xs text-muted-foreground">
-                        Clique para selecionar
-                      </span>
-                    </div>
-                  </Label>
-                );
-              })}
-            </RadioGroup>
+              <div>
+                <h3 className="font-semibold text-lg">
+                  Planejamento inclusivo
+                </h3>
+
+                <p className="text-muted-foreground leading-7">
+                  Ferramentas voltadas para práticas pedagógicas inclusivas e
+                  acompanhamento educacional.
+                </p>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="flex justify-between gap-4 pt-4">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={
-                currentQuestion === 0 || loading
-              }
-              className="min-w-[120px]"
-            >
-              Anterior
-            </Button>
+        {/* FORM */}
+        <Card className="border-0 shadow-2xl rounded-3xl">
+          <CardHeader className="text-center space-y-5 pb-2">
+            <div className="flex justify-center">
+              <div className="bg-primary rounded-3xl p-4 shadow-lg">
+                <GraduationCap className="w-8 h-8 text-white" />
+              </div>
+            </div>
 
-            {isLastQuestion ? (
-              <Button
-                onClick={handleFinish}
-                disabled={
-                  !currentAnswer || loading
-                }
-                className="min-w-[120px] bg-secondary hover:bg-secondary/90"
+            <div className="space-y-3">
+              <CardTitle className="text-3xl font-bold">
+                Diagnóstico Inicial
+              </CardTitle>
+
+              <CardDescription className="text-base leading-7">
+                Responda algumas perguntas para personalizarmos sua jornada de
+                aprendizagem no EDUCAPLUS.
+              </CardDescription>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-8 p-8">
+            {/* PROGRESS */}
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>
+                  Pergunta {currentQuestion + 1} de {questions.length}
+                </span>
+
+                <span>{Math.round(progress)}%</span>
+              </div>
+
+              <Progress value={progress} className="h-2.5" />
+            </div>
+
+            {/* QUESTION */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-semibold leading-relaxed">
+                {questions[currentQuestion].question}
+              </h3>
+
+              <RadioGroup
+                key={questions[currentQuestion].id}
+                value={currentAnswer ?? ""}
+                onValueChange={handleAnswer}
+                className="space-y-3"
               >
-                {loading
-                  ? "Salvando..."
-                  : "Finalizar"}
-              </Button>
-            ) : (
+                {questions[currentQuestion].options.map((option) => {
+                  const isSelected = currentAnswer === option.value;
+
+                  return (
+                    <Label
+                      key={option.value}
+                      htmlFor={option.value}
+                      className={`
+                        flex items-center gap-4 rounded-2xl border p-5
+                        cursor-pointer transition-all duration-200
+                        hover:border-primary/50 hover:bg-muted/40
+                        ${
+                          isSelected
+                            ? "border-primary bg-primary/5 shadow-sm ring-2 ring-primary/20"
+                            : "border-border"
+                        }
+                      `}
+                    >
+                      <RadioGroupItem value={option.value} id={option.value} />
+
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">
+                          {option.label}
+                        </span>
+
+                        <span className="text-xs text-muted-foreground">
+                          Clique para selecionar
+                        </span>
+                      </div>
+                    </Label>
+                  );
+                })}
+              </RadioGroup>
+            </div>
+
+            {/* ACTIONS */}
+            <div className="flex justify-between gap-4 pt-2">
               <Button
-                onClick={handleNext}
-                disabled={
-                  !currentAnswer || loading
-                }
-                className="min-w-[120px] bg-primary hover:bg-primary/90"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentQuestion === 0 || loading}
+                className="min-w-[120px]"
               >
-                Próxima
+                Anterior
               </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+
+              {isLastQuestion ? (
+                <Button
+                  onClick={handleFinish}
+                  disabled={!currentAnswer || loading}
+                  className="min-w-[140px] h-11"
+                >
+                  {loading ? "Finalizando..." : "Finalizar diagnóstico"}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleNext}
+                  disabled={!currentAnswer || loading}
+                  className="min-w-[120px] h-11"
+                >
+                  Próxima
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
