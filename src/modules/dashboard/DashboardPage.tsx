@@ -18,8 +18,10 @@ export default function DashboardPage() {
   const { user } = useAuth();
 
   const { data, loading, error } = useDashboard();
-
+  const isTeacher = user?.role === "TEACHER";
   const isSpecialEd = user?.role === "SPECIAL_ED";
+  const isCoordinator = user?.role === "COORDINATOR";
+  const isAdmin = user?.role === "ADMIN";
 
   const roleMessages = useMemo(() => {
     return {
@@ -81,15 +83,27 @@ export default function DashboardPage() {
 
           <div className="space-y-2">
             <h2 className="text-2xl font-bold">
-              {isSpecialEd
-                ? "Acompanhamento Inclusivo"
-                : "Recomendações Inteligentes"}
+              {isTeacher && "Recomendações Inteligentes"}
+
+              {isSpecialEd && "Acompanhamento Inclusivo"}
+
+              {isCoordinator && "Visão Gerencial"}
+
+              {isAdmin && "Gestão da Plataforma"}
             </h2>
 
             <p className="text-white/90 leading-7 max-w-3xl">
-              {isSpecialEd
-                ? "Acompanhe estratégias pedagógicas, observações educacionais e intervenções voltadas à educação inclusiva."
-                : "O EDUCAPLUS utiliza informações pedagógicas para recomendar trilhas de aprendizagem e estratégias inclusivas alinhadas ao seu perfil profissional."}
+              {isTeacher &&
+                "O EDUCAPLUS utiliza informações pedagógicas para recomendar trilhas de aprendizagem e estratégias inclusivas alinhadas ao seu perfil profissional."}
+
+              {isSpecialEd &&
+                "Acompanhe estratégias pedagógicas, observações educacionais e intervenções voltadas à educação inclusiva."}
+
+              {isCoordinator &&
+                "Monitore indicadores educacionais, acompanhe professores e avalie o desempenho institucional."}
+
+              {isAdmin &&
+                "Gerencie usuários, permissões e acompanhe o funcionamento geral da plataforma."}
             </p>
           </div>
         </div>
@@ -97,13 +111,14 @@ export default function DashboardPage() {
 
       {/* ESTATÍSTICAS */}
       <DashboardStats
-        overallProgress={isSpecialEd ? 0 : data.overallProgress}
-        activeLearningPathCount={isSpecialEd ? 0 : data.activeLearningPathCount}
-        lessonPlanCount={data.lessonPlanCount}
+        overallProgress={isTeacher ? data.overallProgress : 0}
+        activeLearningPathCount={isTeacher ? data.activeLearningPathCount : 0}
+        lessonPlanCount={isTeacher ? data.lessonPlanCount : 0}
+        role={user?.role}
       />
 
       {/* RECOMENDAÇÕES APENAS PARA PROFESSOR */}
-      {!isSpecialEd && (
+      {isTeacher && (
         <RecommendationsSection
           recommendations={data.learningPathRecommendations}
         />

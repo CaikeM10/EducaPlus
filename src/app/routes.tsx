@@ -1,5 +1,4 @@
 import { lazy, Suspense } from "react";
-
 import { createBrowserRouter, Navigate } from "react-router";
 
 import { PrivateRoute } from "./routes/PrivateRoute";
@@ -10,31 +9,23 @@ import { LoadingState } from "../shared/components/LoadingState";
  * AUTH
  */
 const Login = lazy(() => import("./pages/Login"));
-
 const Register = lazy(() => import("./pages/Register"));
 
 /**
  * CORE
  */
 const DashboardLayout = lazy(() => import("./pages/DashboardLayout"));
-
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-
 const Profile = lazy(() => import("./pages/Profile"));
 
 /**
  * MODULES
  */
 const Diagnosis = lazy(() => import("./pages/Diagnosis"));
-
 const LearningPaths = lazy(() => import("./pages/LearningPaths"));
-
 const LearningPathDetail = lazy(() => import("./pages/LearningPathDetail"));
-
 const Planner = lazy(() => import("./pages/Planner"));
-
 const Library = lazy(() => import("./pages/Library"));
-
 const Diary = lazy(() => import("./pages/Diary"));
 
 /**
@@ -58,7 +49,6 @@ export const router = createBrowserRouter([
    */
   {
     path: "/",
-
     element: <Navigate to="/login" replace />,
   },
 
@@ -67,23 +57,12 @@ export const router = createBrowserRouter([
    */
   {
     path: "/login",
-
     element: withSuspense(<Login />),
   },
 
   {
     path: "/register",
-
     element: withSuspense(<Register />),
-  },
-
-  /**
-   * DIAGNOSIS PUBLIC
-   */
-  {
-    path: "/diagnosis",
-
-    element: withSuspense(<Diagnosis />),
   },
 
   /**
@@ -104,7 +83,6 @@ export const router = createBrowserRouter([
        */
       {
         index: true,
-
         element: withSuspense(<Dashboard />),
       },
 
@@ -113,14 +91,20 @@ export const router = createBrowserRouter([
        */
       {
         path: "learning-paths",
-
-        element: withSuspense(<LearningPaths />),
+        element: withSuspense(
+          <PrivateRoute allowedRoles={["TEACHER", "COORDINATOR", "ADMIN"]}>
+            <LearningPaths />
+          </PrivateRoute>,
+        ),
       },
 
       {
         path: "learning-paths/:id",
-
-        element: withSuspense(<LearningPathDetail />),
+        element: withSuspense(
+          <PrivateRoute allowedRoles={["TEACHER", "COORDINATOR", "ADMIN"]}>
+            <LearningPathDetail />
+          </PrivateRoute>,
+        ),
       },
 
       /**
@@ -128,8 +112,11 @@ export const router = createBrowserRouter([
        */
       {
         path: "planner",
-
-        element: withSuspense(<Planner />),
+        element: withSuspense(
+          <PrivateRoute allowedRoles={["TEACHER", "COORDINATOR", "ADMIN"]}>
+            <Planner />
+          </PrivateRoute>,
+        ),
       },
 
       /**
@@ -137,8 +124,11 @@ export const router = createBrowserRouter([
        */
       {
         path: "library",
-
-        element: withSuspense(<Library />),
+        element: withSuspense(
+          <PrivateRoute allowedRoles={["TEACHER", "SPECIAL_ED", "ADMIN"]}>
+            <Library />
+          </PrivateRoute>,
+        ),
       },
 
       /**
@@ -146,8 +136,11 @@ export const router = createBrowserRouter([
        */
       {
         path: "diary",
-
-        element: withSuspense(<Diary />),
+        element: withSuspense(
+          <PrivateRoute allowedRoles={["TEACHER", "ADMIN"]}>
+            <Diary />
+          </PrivateRoute>,
+        ),
       },
 
       /**
@@ -155,17 +148,14 @@ export const router = createBrowserRouter([
        */
       {
         path: "profile",
-
         element: withSuspense(<Profile />),
       },
 
       /**
        * ANALYTICS
-       * COORDINATOR ONLY
        */
       {
         path: "analytics",
-
         element: withSuspense(
           <PrivateRoute allowedRoles={["COORDINATOR", "ADMIN"]}>
             <Analytics />
@@ -174,11 +164,10 @@ export const router = createBrowserRouter([
       },
 
       /**
-       * SPECIAL EDUCATION
+       * DIAGNOSIS
        */
       {
         path: "diagnosis",
-
         element: withSuspense(
           <PrivateRoute allowedRoles={["SPECIAL_ED", "ADMIN"]}>
             <Diagnosis />
@@ -189,14 +178,13 @@ export const router = createBrowserRouter([
   },
 
   /**
-   * FALLBACK
+   * 404
    */
   {
     path: "*",
-
     element: (
       <div className="flex min-h-screen items-center justify-center bg-muted/20 p-6">
-        <div className="max-w-md rounded-3xl bg-white p-8 shadow-xl border text-center">
+        <div className="max-w-md rounded-3xl border bg-white p-8 text-center shadow-xl">
           <h1 className="text-5xl font-bold">404</h1>
 
           <p className="mt-4 text-muted-foreground">Página não encontrada.</p>

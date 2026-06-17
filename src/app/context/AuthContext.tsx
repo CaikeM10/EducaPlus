@@ -1,4 +1,10 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { api } from "../services/api";
 
 export type UserRole = "ADMIN" | "TEACHER" | "COORDINATOR" | "SPECIAL_ED";
@@ -50,9 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    refreshUser().finally(() => setLoading(false));
+    void refreshUser().finally(() => setLoading(false));
   }, []);
-
   function setAuthenticatedUser(userData: AuthUser, token?: string) {
     if (token) {
       localStorage.setItem("token", token);

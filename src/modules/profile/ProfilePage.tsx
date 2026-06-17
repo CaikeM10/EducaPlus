@@ -57,6 +57,9 @@ export default function ProfilePage() {
   const [deleting, setDeleting] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const isTeacher = user?.role === "TEACHER";
+  const isCoordinator = user?.role === "COORDINATOR";
+  const isSpecialEd = user?.role === "SPECIAL_ED";
 
   useEffect(() => {
     if (!user) return;
@@ -157,7 +160,8 @@ export default function ProfilePage() {
         <div>
           <CardTitle>Informações do perfil</CardTitle>
           <CardDescription>
-            Dados usados para autenticação e identificação do usuário.
+            Gerencie seus dados de acesso e informações profissionais na
+            plataforma.
           </CardDescription>
         </div>
       </div>
@@ -203,64 +207,132 @@ export default function ProfilePage() {
 
       {summary && (
         <>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              title="Trilhas concluídas"
-              value={summary.learningPathsCompleted}
-              icon={<BookOpen className="h-5 w-5" />}
-            />
-            <StatCard
-              title="Em progresso"
-              value={summary.learningPathsInProgress}
-              icon={<Target className="h-5 w-5" />}
-            />
-            <StatCard
-              title="Planos criados"
-              value={summary.lessonPlansCount}
-              icon={<Calendar className="h-5 w-5" />}
-            />
-            <StatCard
-              title="Reflexões no diário"
-              value={summary.diaryEntriesCount}
-              icon={<Sparkles className="h-5 w-5" />}
-            />
-          </div>
+          {isTeacher && (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <StatCard
+                title="Trilhas concluídas"
+                value={summary.learningPathsCompleted}
+                icon={<BookOpen className="h-5 w-5" />}
+              />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Progresso de aprendizagem</CardTitle>
-              <CardDescription>
-                Trilhas iniciadas com base nos dados atuais do backend.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              {summary.activeLearningPaths.length === 0 ? (
-                <EmptyState
-                  title="Nenhuma trilha em andamento"
-                  description="As trilhas iniciadas aparecerão aqui."
-                />
-              ) : (
-                summary.activeLearningPaths.map((path) => (
-                  <div key={path.id} className="space-y-2">
-                    <div className="flex items-center justify-between gap-4 text-sm">
-                      <span className="font-medium">{path.title}</span>
-                      <span className="font-semibold text-primary">
-                        {path.progress}%
-                      </span>
-                    </div>
-                    <Progress value={path.progress} />
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-          <div className="grid gap-6 lg:grid-cols-[320px_1fr]"> </div>
-          <AchievementsSection
-            achievements={achievements}
-            loading={achievementsLoading}
-            error={achievementsError}
-            onRetry={refreshAchievements}
-          />
+              <StatCard
+                title="Em progresso"
+                value={summary.learningPathsInProgress}
+                icon={<Target className="h-5 w-5" />}
+              />
+
+              <StatCard
+                title="Planos criados"
+                value={summary.lessonPlansCount}
+                icon={<Calendar className="h-5 w-5" />}
+              />
+
+              <StatCard
+                title="Reflexões no diário"
+                value={summary.diaryEntriesCount}
+                icon={<Sparkles className="h-5 w-5" />}
+              />
+            </div>
+          )}
+
+          {isSpecialEd && (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <StatCard
+                title="Trilhas recomendadas"
+                value={8}
+                icon={<BookOpen className="h-5 w-5" />}
+              />
+
+              <StatCard
+                title="Trilhas para revisão"
+                value={3}
+                icon={<Target className="h-5 w-5" />}
+              />
+
+              <StatCard
+                title="Recursos analisados"
+                value={12}
+                icon={<Sparkles className="h-5 w-5" />}
+              />
+
+              <StatCard
+                title="Estratégias inclusivas"
+                value={15}
+                icon={<Calendar className="h-5 w-5" />}
+              />
+            </div>
+          )}
+
+          {isCoordinator && (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <StatCard
+                title="Professores"
+                value={25}
+                icon={<BookOpen className="h-5 w-5" />}
+              />
+
+              <StatCard
+                title="Profissionais AEE"
+                value={8}
+                icon={<Target className="h-5 w-5" />}
+              />
+
+              <StatCard
+                title="Relatórios"
+                value={14}
+                icon={<Calendar className="h-5 w-5" />}
+              />
+
+              <StatCard
+                title="Instituições"
+                value={4}
+                icon={<Sparkles className="h-5 w-5" />}
+              />
+            </div>
+          )}
+          {isTeacher && (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Progresso de aprendizagem</CardTitle>
+
+                  <CardDescription>
+                    Trilhas iniciadas com base nos dados atuais do backend.
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-5">
+                  {summary.activeLearningPaths.length === 0 ? (
+                    <EmptyState
+                      title="Nenhuma trilha em andamento"
+                      description="As trilhas iniciadas aparecerão aqui."
+                    />
+                  ) : (
+                    summary.activeLearningPaths.map((path) => (
+                      <div key={path.id} className="space-y-2">
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                          <span className="font-medium">{path.title}</span>
+
+                          <span className="font-semibold text-primary">
+                            {path.progress}%
+                          </span>
+                        </div>
+
+                        <Progress value={path.progress} />
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+
+              <AchievementsSection
+                achievements={achievements}
+                loading={achievementsLoading}
+                error={achievementsError}
+                onRetry={refreshAchievements}
+              />
+            </>
+          )}
         </>
       )}
     </div>

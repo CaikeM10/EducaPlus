@@ -38,6 +38,8 @@
   );
 
   --warning: #f59e0b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
   --border: rgba(148, 163, 184, 0.16);
   --input: transparent;
   --input-background: #ffffff;

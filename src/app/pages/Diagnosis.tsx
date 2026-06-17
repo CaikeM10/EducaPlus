@@ -138,6 +138,77 @@ const questions = [
       },
     ],
   },
+  {
+    id: 6,
+    question:
+      "Com que frequência você realiza adaptações curriculares para estudantes com necessidades específicas?",
+    options: [
+      {
+        value: "never",
+        label: "Nunca",
+      },
+      {
+        value: "sometimes",
+        label: "Às vezes",
+      },
+      {
+        value: "often",
+        label: "Frequentemente",
+      },
+      {
+        value: "always",
+        label: "Sempre",
+      },
+    ],
+  },
+
+  {
+    id: 7,
+    question:
+      "Qual é sua maior dificuldade ao trabalhar com educação inclusiva?",
+    options: [
+      {
+        value: "planning",
+        label: "Planejamento pedagógico",
+      },
+      {
+        value: "assessment",
+        label: "Avaliação da aprendizagem",
+      },
+      {
+        value: "behavior",
+        label: "Gestão comportamental",
+      },
+      {
+        value: "adaptation",
+        label: "Adaptação de atividades",
+      },
+    ],
+  },
+
+  {
+    id: 8,
+    question:
+      "Você gostaria de receber mais recomendações relacionadas a qual tema?",
+    options: [
+      {
+        value: "autism",
+        label: "TEA - Transtorno do Espectro Autista",
+      },
+      {
+        value: "adhd",
+        label: "TDAH",
+      },
+      {
+        value: "dyslexia",
+        label: "Dislexia",
+      },
+      {
+        value: "inclusive",
+        label: "Educação Inclusiva em geral",
+      },
+    ],
+  },
 ];
 
 export default function Diagnosis() {
@@ -166,15 +237,16 @@ export default function Diagnosis() {
       parsedUser?.type;
 
     console.log("ROLE:", role);
-
-    const specialRoles = [
+    const blockedRoles = [
+      "COORDINATOR",
+      "SPECIAL_ED",
       "EDUCADOR_ESPECIAL",
       "educador_especial",
       "SPECIAL_EDUCATOR",
       "educador",
     ];
 
-    if (specialRoles.includes(role)) {
+    if (blockedRoles.includes(role)) {
       navigate("/app", { replace: true });
     }
   }, [navigate]);
@@ -294,12 +366,13 @@ export default function Diagnosis() {
 
             <div className="space-y-3">
               <CardTitle className="text-3xl font-bold">
-                Diagnóstico Inicial
+                Diagnóstico Pedagógico Inteligente
               </CardTitle>
 
               <CardDescription className="text-base leading-7">
-                Responda algumas perguntas para personalizarmos sua jornada de
-                aprendizagem no EDUCAPLUS.
+                Responda ao formulário para que o sistema identifique suas
+                necessidades pedagógicas e recomende trilhas, recursos e
+                estratégias inclusivas mais adequadas ao seu perfil.
               </CardDescription>
             </div>
           </CardHeader>

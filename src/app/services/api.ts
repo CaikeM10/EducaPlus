@@ -16,17 +16,31 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-api.interceptors.response.use((response) => {
-  const envelope = response.data as ApiEnvelope<unknown>;
+api.interceptors.response.use(
+  (response) => {
+    const envelope = response.data as ApiEnvelope<unknown>;
 
-  if (
-    envelope &&
-    typeof envelope === "object" &&
-    "success" in envelope &&
-    "data" in envelope
-  ) {
-    response.data = envelope.data;
-  }
+    if (
+      envelope &&
+      typeof envelope === "object" &&
+      "success" in envelope &&
+      "data" in envelope
+    ) {
+      response.data = envelope.data;
+    }
 
-  return response;
-});
+    return response;
+  },
+
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);

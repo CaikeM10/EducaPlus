@@ -48,68 +48,110 @@ export default function DashboardLayout() {
   const isSpecialEd = user?.role === "SPECIAL_ED";
 
   const navItems = useMemo(() => {
-    const baseItems = [
+    const items = [
       {
         path: "/app",
         label: "Painel",
         icon: LayoutDashboard,
       },
+    ];
 
-      // TRILHAS APENAS PARA PERFIS DE APRENDIZAGEM
-      !isSpecialEd && {
-        path: "/app/learning-paths",
-        label: "Trilhas",
-        icon: BookOpen,
-      },
+    // PROFESSOR
+    if (user?.role === "TEACHER") {
+      items.push(
+        {
+          path: "/app/learning-paths",
+          label: "Trilhas",
+          icon: BookOpen,
+        },
+        {
+          path: "/app/planner",
+          label: "Planejador",
+          icon: Calendar,
+        },
+        {
+          path: "/app/library",
+          label: "Biblioteca",
+          icon: Library,
+        },
+        {
+          path: "/app/diary",
+          label: "Diário",
+          icon: BookMarked,
+        },
+      );
+    }
 
-      {
-        path: "/app/planner",
-        label: "Planejador",
-        icon: Calendar,
-      },
-
-      {
-        path: "/app/library",
-        label: "Biblioteca",
-        icon: Library,
-      },
-
-      {
-        path: "/app/diary",
-        label: "Diário",
-        icon: BookMarked,
-      },
-    ].filter(Boolean);
+    // AEE
+    if (user?.role === "SPECIAL_ED") {
+      items.push(
+        {
+          path: "/app/library",
+          label: "Biblioteca",
+          icon: Library,
+        },
+        {
+          path: "/app/diagnosis",
+          label: "Diagnóstico",
+          icon: Stethoscope,
+        },
+      );
+    }
 
     // COORDENADOR
     if (user?.role === "COORDINATOR") {
-      baseItems.push({
-        path: "/app/analytics",
-        label: "Relatórios",
-        icon: BarChart3,
-      });
-    }
-
-    // EDUCADOR ESPECIAL
-    if (user?.role === "SPECIAL_ED") {
-      baseItems.push({
-        path: "/app/diagnosis",
-        label: "Diagnóstico",
-        icon: Stethoscope,
-      });
+      items.push(
+        {
+          path: "/app/learning-paths",
+          label: "Trilhas",
+          icon: BookOpen,
+        },
+        {
+          path: "/app/planner",
+          label: "Planejador",
+          icon: Calendar,
+        },
+        {
+          path: "/app/analytics",
+          label: "Relatórios",
+          icon: BarChart3,
+        },
+      );
     }
 
     // ADMIN
     if (user?.role === "ADMIN") {
-      baseItems.push({
-        path: "/app/admin",
-        label: "Administração",
-        icon: ShieldCheck,
-      });
+      items.push(
+        {
+          path: "/app/learning-paths",
+          label: "Trilhas",
+          icon: BookOpen,
+        },
+        {
+          path: "/app/planner",
+          label: "Planejador",
+          icon: Calendar,
+        },
+        {
+          path: "/app/library",
+          label: "Biblioteca",
+          icon: Library,
+        },
+        {
+          path: "/app/diary",
+          label: "Diário",
+          icon: BookMarked,
+        },
+        {
+          path: "/app/admin",
+          label: "Administração",
+          icon: ShieldCheck,
+        },
+      );
     }
 
-    return baseItems;
-  }, [user, isSpecialEd]);
+    return items;
+  }, [user]);
 
   const isActive = (path: string) => {
     if (path === "/app") {
