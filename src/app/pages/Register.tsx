@@ -74,7 +74,7 @@ export default function Register() {
       if (role === "SPECIAL_ED") {
         navigate("/app");
       } else {
-        navigate("/diagnosis");
+        navigate("/app/diagnosis");
       }
     } catch (error) {
       alert(getErrorMessage(error));

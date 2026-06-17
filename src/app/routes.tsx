@@ -169,7 +169,7 @@ export const router = createBrowserRouter([
       {
         path: "diagnosis",
         element: withSuspense(
-          <PrivateRoute allowedRoles={["SPECIAL_ED", "ADMIN"]}>
+          <PrivateRoute allowedRoles={["TEACHER", "SPECIAL_ED", "ADMIN"]}>
             <Diagnosis />
           </PrivateRoute>,
         ),
