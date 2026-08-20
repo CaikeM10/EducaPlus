@@ -51,7 +51,7 @@ export default function Login() {
       if (diagnosisCompleted) {
         navigate("/app");
       } else {
-        navigate("/diagnosis");
+        navigate("/app/diagnosis");
       }
     } catch (error) {
       console.error(error);
